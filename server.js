@@ -26,8 +26,10 @@ io.on("connection", socket => {
         io.emit("message", "A user has left the chat");
     });
 
+    //handle the emit chat message from the client
     socket.on("chatMessage", (msg) => {
         console.log(msg);
+        io.emit("message", msg);
     })
 })
 
