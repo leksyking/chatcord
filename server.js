@@ -14,7 +14,6 @@ app.use(express.static("public"));
 const botName = "ChatCord Bot"
 //Run when client connects
 io.on("connection", socket => {
-
     //handle join room 
     socket.on("joinRoom", ({ username, room }) => {
         const user = userJoin(socket.id, username, room);
@@ -29,6 +28,12 @@ io.on("connection", socket => {
         socket.broadcast
         .to(user.room)
         .emit("message", formatMessage(botName, `${user.username} has joined the chat`));
+
+        //send user and room info
+        io.to(user.room).emit("roomUsers", {
+            room: user.room,
+            users: getRoomUsers(user.room)
+        });
     });
 
     //handle the emit chat message from the client
@@ -42,10 +47,16 @@ io.on("connection", socket => {
     socket.on("disconnect", () => {
         const user = userLeave(socket.id);
         if(user){
+            //to all clients in the room
             io.to(user.room).emit("message", formatMessage(botName, `${user.username} has left the chat`));
+
+            //send user and room info
+            io.to(user.room).emit("roomUsers", {
+                room: user.room,
+                users: getRoomUsers(user.room)
+            });
         }
 
-        //to all clients in the room
     });
 })
 
